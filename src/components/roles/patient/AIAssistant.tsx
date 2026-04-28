@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../../../AppContext';
+import { sendMessage } from "../../../services/gemini"; // adjust path if needed
 import { 
   ArrowLeft, 
   Send, 
@@ -21,6 +22,8 @@ interface AIAssistantProps {
 }
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
+  const [selectedEmotion, setSelectedEmotion] = useState<EmotionalState | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { updateEmotionalState } = useAppContext();
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [messages, setMessages] = useState<{role: 'ai' | 'user', text: string, type?: 'text' | 'audio'}[]>([
@@ -46,32 +49,74 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
     { state: 'motivated', label: 'Con ánimo', emoji: '💪' },
   ];
 
-  const handleEmotionSelect = (state: EmotionalState) => {
-    updateEmotionalState(state);
-    setHasCheckedIn(true);
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', text: 'Gracias por contarme. Estoy aquí para ti.' }]);
-    }, 500);
+  const getInitialMessage = (state: EmotionalState) => {
+  switch (state) {
+    case 'sad':
+      return 'Siento que estés pasando por un momento difícil. Estoy aquí contigo. ¿Quieres contarme qué te está pesando más hoy?';
+    case 'anxious':
+      return 'Estoy contigo. Vamos paso a paso. ¿Qué es lo que más te está generando ansiedad ahora?';
+    case 'calm':
+      return 'Qué bueno saber que estás en calma. ¿Hay algo bonito que quieras explorar o compartir hoy?';
+    case 'peace':
+      return 'Me alegra ver que estás en paz. ¿Quieres profundizar en cómo llegaste a este estado?';
+    case 'motivated':
+      return 'Esa energía se siente bien 💪 ¿En qué te gustaría enfocarte hoy?';
+    default:
+      return 'Gracias por contarme cómo te sientes. Estoy aquí para acompañarte.';
+    }
   };
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
-    const userMsg = inputText;
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setInputText('');
-    
-    // AI Mock Response
-    setTimeout(() => {
-      const responses = [
-        "Cuéntame más sobre eso...",
-        "Ese recuerdo suena muy especial, Carlos.",
-        "¿Quieres que guardemos este pensamiento para tu familia?",
-        "Entiendo perfectamente. Es valioso que compartas esto conmigo."
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setMessages(prev => [...prev, { role: 'ai', text: randomResponse }]);
-    }, 1000);
+  const handleEmotionSelect = (state: EmotionalState) => {
+    setSelectedEmotion(state);
+    updateEmotionalState(state);
+    setHasCheckedIn(true);
+
+    const initialAIMessage = getInitialMessage(state);
+
+    setMessages([
+      { role: 'ai', text: initialAIMessage }
+    ]);
   };
+
+  const handleSend = async () => {
+    if (!inputText.trim() || isLoading) return;
+
+    const userMsg = inputText;
+
+    // Build updated message list FIRST (avoid stale state bug)
+    const updatedMessages = [
+      ...messages,
+      { role: 'user' as const, text: userMsg }
+    ];
+
+    // Update UI immediately
+    setMessages(updatedMessages);
+    setInputText('');
+
+    try {
+      setIsLoading(true);
+
+      // Send FULL conversation (not just last message)
+      const reply = await sendMessage(updatedMessages, selectedEmotion);;
+
+      // Add AI response
+      setMessages(prev => [
+        ...prev,
+        { role: 'ai', text: reply }
+      ]);
+
+    } catch (error) {
+      console.error(error);
+
+      setMessages(prev => [
+        ...prev,
+        { role: 'ai', text: "Lo siento, tuve un problema al responder. Intenta de nuevo." }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+};
+  
 
   const handleMicPress = () => setIsRecording(true);
   const handleMicRelease = () => {
@@ -174,6 +219,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
             </div>
           </motion.div>
         ))}
+        {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white text-text-sub border border-gray-100 p-4 rounded-2xl shadow-sm max-w-[80%]">
+                <p className="text-sm">Escribiendo...</p>
+              </div>
+            </div>
+        )}
       </div>
 
       {/* Input Area */}
