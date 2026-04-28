@@ -1,0 +1,14 @@
+{
+  "name": "ACOMPAÑAR",
+  "description": "Plataforma de acompañamiento paliativo potenciada por IA que humaniza el cuidado al final de la vida.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "AI-powered narratives",
+    "Emotional tracking",
+    "Clinical monitoring",
+    "Life story preservation"
+  ]
+}
