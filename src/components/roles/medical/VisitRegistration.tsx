@@ -20,6 +20,7 @@ import {
   Trash2,
   Plus
 } from 'lucide-react';
+import { analyzeFacialExpression, isAIAvailable } from '../../../services/gemini';
 
 interface VisitRegistrationProps {
   onBack: () => void;
@@ -30,6 +31,7 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
   const [step, setStep] = useState(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [observationContext, setObservationContext] = useState('');
   
   // Form State
   const [vitals, setVitals] = useState({
@@ -46,12 +48,20 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
 
   const [meds, setMeds] = useState([{ name: 'Morfina', dose: '5mg c/4h' }]);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
+    if (isAIAvailable()) {
+      try {
+        const result = await analyzeFacialExpression(observationContext);
+        setAnalysisResult(result);
+      } catch {
+        setAnalysisResult("No se pudo completar el análisis. Intente de nuevo.");
+      }
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setAnalysisResult("Expresión facial: Tranquilidad con algo de fatiga. Nivel de malestar estimado: Bajo (3/10). Recomendación: Mantener plan actual.");
-    }, 2000);
+    }
+    setIsAnalyzing(false);
   };
 
   const handleSave = () => {
@@ -119,8 +129,17 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
                  </h3>
                  <div className="space-y-6">
                     <div className="aspect-video bg-surface-soft rounded-3xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200">
-                      <Camera className="w-12 h-12 text-gray-300 md-2" />
+                      <Camera className="w-12 h-12 text-gray-300 mb-2" />
                       <button className="text-primary font-bold text-sm bg-white px-6 py-2 rounded-xl shadow-sm mt-4">Tomar foto o subir</button>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-black text-text-sub uppercase tracking-widest">Observación clínica del paciente</label>
+                      <textarea
+                        value={observationContext}
+                        onChange={(e) => setObservationContext(e.target.value)}
+                        placeholder="Ej: Paciente en reposo, ojos entreabiertos, respiración pausada, expresión facial relajada..."
+                        className="w-full bg-surface-soft p-4 rounded-2xl outline-none min-h-[80px] text-sm border border-transparent focus:border-primary/20 transition-all"
+                      />
                     </div>
                     <button 
                       onClick={handleAnalyze} 
@@ -128,11 +147,12 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
                       className="w-full py-4 bg-primary/10 text-primary rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary/20 transition-all"
                     >
                       {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-                      {isAnalyzing ? 'Analizando...' : 'Analizar estado con IA'}
+                      {isAnalyzing ? 'Analizando con Gemini...' : 'Analizar estado con IA'}
                     </button>
                     {analysisResult && (
-                      <div className="p-4 bg-success/5 border border-success/20 rounded-2xl text-sm italic text-success font-medium">
-                        "Result: {analysisResult}"
+                      <div className="p-4 bg-success/5 border border-success/20 rounded-2xl text-sm text-text-main leading-relaxed whitespace-pre-wrap">
+                        <p className="font-bold text-primary mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4" /> Resultado del análisis IA</p>
+                        {analysisResult}
                       </div>
                     )}
                  </div>

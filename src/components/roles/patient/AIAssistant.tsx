@@ -12,9 +12,11 @@ import {
   Mic, 
   Camera, 
   X,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { EmotionalState } from '../../../types';
+import { sendPatientMessage, isAIAvailable, type ChatMessage } from '../../../services/gemini';
 
 interface AIAssistantProps {
   onBack: () => void;
@@ -29,6 +31,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,40 +49,80 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
     { state: 'motivated', label: 'Con ánimo', emoji: '💪' },
   ];
 
+  // Build Gemini chat history from our messages
+  const buildChatHistory = (): ChatMessage[] => {
+    return messages
+      .filter(msg => msg.type !== 'audio') // skip audio placeholders
+      .map(msg => ({
+        role: msg.role === 'user' ? 'user' as const : 'model' as const,
+        parts: [{ text: msg.text }],
+      }));
+  };
+
   const handleEmotionSelect = (state: EmotionalState) => {
     updateEmotionalState(state);
     setHasCheckedIn(true);
+    const label = emotionOptions.find(e => e.state === state)?.label || state;
     setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', text: 'Gracias por contarme. Estoy aquí para ti.' }]);
+      setMessages(prev => [...prev, { role: 'ai', text: `Gracias por contarme que hoy te sientes ${label.toLowerCase()}. Estoy aquí para ti.` }]);
     }, 500);
   };
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
+  const handleSend = async () => {
+    if (!inputText.trim() || isThinking) return;
     const userMsg = inputText;
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setInputText('');
-    
-    // AI Mock Response
-    setTimeout(() => {
-      const responses = [
-        "Cuéntame más sobre eso...",
-        "Ese recuerdo suena muy especial, Carlos.",
-        "¿Quieres que guardemos este pensamiento para tu familia?",
-        "Entiendo perfectamente. Es valioso que compartas esto conmigo."
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setMessages(prev => [...prev, { role: 'ai', text: randomResponse }]);
-    }, 1000);
+    setIsThinking(true);
+
+    if (isAIAvailable()) {
+      // Build history BEFORE adding the new user message (it's already been added to state)
+      const history = buildChatHistory();
+      try {
+        const aiResponse = await sendPatientMessage(history, userMsg);
+        setMessages(prev => [...prev, { role: 'ai', text: aiResponse }]);
+      } catch {
+        setMessages(prev => [...prev, { role: 'ai', text: 'Lo siento, no pude procesar tu mensaje. ¿Puedes intentar de nuevo?' }]);
+      }
+    } else {
+      // Fallback mock if no API key
+      setTimeout(() => {
+        const responses = [
+          "Cuéntame más sobre eso...",
+          "Ese recuerdo suena muy especial, Carlos.",
+          "¿Quieres que guardemos este pensamiento para tu familia?",
+          "Entiendo perfectamente. Es valioso que compartas esto conmigo."
+        ];
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        setMessages(prev => [...prev, { role: 'ai', text: randomResponse }]);
+      }, 1000);
+    }
+    setIsThinking(false);
   };
 
   const handleMicPress = () => setIsRecording(true);
-  const handleMicRelease = () => {
+  const handleMicRelease = async () => {
     setIsRecording(false);
     setMessages(prev => [...prev, { role: 'user', text: 'Mensaje de voz enviado', type: 'audio' }]);
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', text: 'Escuché tu mensaje de voz. Gracias por compartir tu voz conmigo.' }]);
-    }, 1000);
+    setIsThinking(true);
+
+    if (isAIAvailable()) {
+      try {
+        const history = buildChatHistory();
+        const aiResponse = await sendPatientMessage(
+          history,
+          '(El paciente envió un mensaje de voz. Responde como si lo hubieras escuchado, con empatía.)'
+        );
+        setMessages(prev => [...prev, { role: 'ai', text: `Escuché tu mensaje de voz. ${aiResponse}` }]);
+      } catch {
+        setMessages(prev => [...prev, { role: 'ai', text: 'Escuché tu mensaje de voz. Gracias por compartir tu voz conmigo.' }]);
+      }
+    } else {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { role: 'ai', text: 'Escuché tu mensaje de voz. Gracias por compartir tu voz conmigo.' }]);
+      }, 1000);
+    }
+    setIsThinking(false);
   };
 
   if (!hasCheckedIn) {
@@ -135,7 +178,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
             </div>
             <div>
               <h3 className="font-bold text-text-main line-clamp-1">Mi Acompañante</h3>
-              <p className="text-[10px] text-success font-bold uppercase tracking-wider">En línea conmigo</p>
+              <p className="text-[10px] text-success font-bold uppercase tracking-wider">
+                {isAIAvailable() ? 'Gemini 2.0 Flash · En línea' : 'Modo offline'}
+              </p>
             </div>
           </div>
         </div>
@@ -174,6 +219,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
             </div>
           </motion.div>
         ))}
+        {isThinking && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
+            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm rounded-bl-none flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span className="text-sm text-text-sub">Pensando...</span>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Input Area */}
@@ -194,11 +251,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
               placeholder="Escribe algo aquí..."
               className="w-full bg-transparent p-3 outline-none resize-none text-sm md:text-base"
+              disabled={isThinking}
             />
             {inputText.trim() ? (
               <button 
                 onClick={handleSend}
-                className="p-3 text-primary hover:scale-110 transition-transform"
+                disabled={isThinking}
+                className="p-3 text-primary hover:scale-110 transition-transform disabled:opacity-50"
               >
                 <Send className="w-6 h-6" />
               </button>
