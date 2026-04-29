@@ -46,6 +46,30 @@
       mobility: 'Con ayuda'
     });
 
+      // Función para convertir el archivo de imagen a Base64
+    const convertFileToBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+    };
+
+    const handleImageUpload = async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const base64Image = await convertFileToBase64(file);
+        // Guarda el base64 en el estado. Esto servirá para previsualizarla y para enviarla.
+        setSelectedImage(base64Image); 
+      } catch (error) {
+        console.error("Error al convertir la imagen:", error);
+        addAlert({ type: 'error', category: 'system', message: 'Error al cargar la imagen' });
+      }
+    };
+
     const [meds, setMeds] = useState([{ name: 'Morfina', dose: '5mg c/4h' }]);
 
     const handleAnalyze = async () => {
@@ -61,7 +85,7 @@
 
           - Expresión facial:
           - Nivel de malestar (0-10):
-          - Signos visibles:
+          - Signos visibles:\
           - Recomendación breve:
           `;
 
@@ -144,28 +168,31 @@
                       <Sparkles className="w-5 h-5 text-primary" /> Sección 2: Análisis Visual con IA
                   </h3>
                   <div className="space-y-6">
-                      <div 
-                        onClick={() => {
-                          // Imagen mock (puedes cambiarla por cualquier URL)
-                          const mockImage = "https://images.unsplash.com/photo-1584515933487-779824d29309"; 
-                          setSelectedImage(mockImage);
-                        }}
-                        className="aspect-video bg-surface-soft rounded-3xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 cursor-pointer hover:border-primary transition-colors overflow-hidden"
-                      >
-                        {selectedImage ? (
-                          <img src={selectedImage} className="w-full h-full object-cover" />
-                        ) : (
-                          <>
-                            <Camera className="w-12 h-12 text-gray-300 mb-2" />
-                            <p className="text-sm text-text-sub">Tocar para cargar imagen</p>
-                          </>
-                        )}
-                      </div>
-                      {analysisResult && (
-                        <div className="p-4 bg-success/5 border border-success/20 rounded-2xl text-sm italic text-success font-medium">
-                          "Result: {analysisResult}"
-                        </div>
+                    {/* Cambiamos el div por un label para que active el input file */}
+                    <label className="aspect-video bg-surface-soft rounded-3xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 cursor-pointer hover:border-primary transition-colors overflow-hidden">
+                      
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleImageUpload} 
+                      />
+
+                      {selectedImage ? (
+                        <img src={selectedImage} className="w-full h-full object-cover" alt="Visita médica" />
+                      ) : (
+                        <>
+                          <Camera className="w-12 h-12 text-gray-300 mb-2" />
+                          <p className="text-sm text-text-sub">Tocar para cargar imagen o tomar foto</p>
+                        </>
                       )}
+                    </label>
+                    
+                    {analysisResult && (
+                      <div className="p-4 bg-success/5 border border-success/20 rounded-2xl text-sm italic text-success font-medium">
+                        "Result: {analysisResult}"
+                      </div>
+                    )}
                   </div>
                   <button 
                     onClick={handleAnalyze}
