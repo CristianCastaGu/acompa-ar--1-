@@ -77,7 +77,12 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
 
     // Puedes pasar contexto del paciente si quieres personalización
     const context = patient 
-      ? `Estás hablando con un familiar de ${patient.name}. Sé empático, claro y humano.`
+      ? `Estás hablando con un familiar de ${patient.name}. Eres un guía emocional para familiares de pacientes en cuidado paliativo.
+        - Sé empático pero no infantil
+        - Da consejos prácticos
+        - No des diagnósticos médicos
+        - Valida emociones
+        No te extiendas, se conciso a menos que te pidan mas detalle.`
       : undefined;
 
     const reply = await sendMessage(updatedMessages, context);
