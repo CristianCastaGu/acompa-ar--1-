@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../../../AppContext';
+import { sendImage } from "../../../services/gemini";
 import { 
   ArrowLeft, 
   Check, 
@@ -27,6 +28,7 @@ interface VisitRegistrationProps {
 
 const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
   const { addAlert } = useAppContext();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
@@ -46,12 +48,37 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
 
   const [meds, setMeds] = useState([{ name: 'Morfina', dose: '5mg c/4h' }]);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!selectedImage) return;
+
     setIsAnalyzing(true);
-    setTimeout(() => {
+
+    try {
+      const prompt = `
+  Eres un asistente clínico en cuidados paliativos.
+
+  Analiza la imagen de un paciente y responde en este formato:
+
+  - Expresión facial:
+  - Nivel de malestar (0-10):
+  - Signos visibles relevantes:
+  - Recomendación breve:
+
+  Sé prudente. No inventes diagnósticos. Usa lenguaje clínico simple.
+  `;
+
+      const reply = await sendImage([
+        { role: 'user', text: prompt + `\nImagen: ${selectedImage}` }
+      ]);
+
+      setAnalysisResult(reply);
+
+    } catch (error) {
+      console.error(error);
+      setAnalysisResult("Error al analizar la imagen.");
+    } finally {
       setIsAnalyzing(false);
-      setAnalysisResult("Expresión facial: Tranquilidad con algo de fatiga. Nivel de malestar estimado: Bajo (3/10). Recomendación: Mantener plan actual.");
-    }, 2000);
+    }
   };
 
   const handleSave = () => {
@@ -122,14 +149,23 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
                       <Camera className="w-12 h-12 text-gray-300 md-2" />
                       <button className="text-primary font-bold text-sm bg-white px-6 py-2 rounded-xl shadow-sm mt-4">Tomar foto o subir</button>
                     </div>
-                    <button 
-                      onClick={handleAnalyze} 
-                      disabled={isAnalyzing}
-                      className="w-full py-4 bg-primary/10 text-primary rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary/20 transition-all"
+                    <div 
+                      onClick={() => {
+                        // Imagen mock (puedes cambiarla por cualquier URL)
+                        const mockImage = "https://images.unsplash.com/photo-1584515933487-779824d29309"; 
+                        setSelectedImage(mockImage);
+                      }}
+                      className="aspect-video bg-surface-soft rounded-3xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 cursor-pointer hover:border-primary transition-colors overflow-hidden"
                     >
-                      {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-                      {isAnalyzing ? 'Analizando...' : 'Analizar estado con IA'}
-                    </button>
+                      {selectedImage ? (
+                        <img src={selectedImage} className="w-full h-full object-cover" />
+                      ) : (
+                        <>
+                          <Camera className="w-12 h-12 text-gray-300 mb-2" />
+                          <p className="text-sm text-text-sub">Tocar para cargar imagen</p>
+                        </>
+                      )}
+                    </div>
                     {analysisResult && (
                       <div className="p-4 bg-success/5 border border-success/20 rounded-2xl text-sm italic text-success font-medium">
                         "Result: {analysisResult}"
