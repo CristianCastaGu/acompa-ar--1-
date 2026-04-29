@@ -6,6 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../../../AppContext';
+import { sendMessage } from "../../../services/gemini";
 import { 
   ArrowLeft, 
   MessageCircle, 
@@ -26,10 +27,11 @@ interface SupportGuideProps {
 const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
   const { patient } = useAppContext();
   const [messages, setMessages] = useState<{role: 'ai' | 'user', text: string}[]>([
-    { role: 'ai', text: 'Hola, soy tu guía de apoyo emocional. Entiendo que este camino puede ser difícil. ¿En qué puedo orientarte hoy?' }
+    { role: 'ai', text: 'Hola, soy tu guía de apoyo emocional. Estoy aquí para acompañarte. ¿En qué puedo orientarte hoy?' }
   ]);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -55,23 +57,47 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
     }
   ];
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
-    setMessages(prev => [...prev, { role: 'user', text: inputText }]);
-    setInputText('');
-    setIsTyping(true);
+ const handleSend = async () => {
+  if (!inputText.trim() || isLoading) return;
 
-    setTimeout(() => {
-      const responses = [
-        "Es completamente normal sentirse agotado en este proceso. ¿Tienes a alguien con quien compartir la carga hoy?",
-        "Entiendo tu preocupación. Es valioso que quieras lo mejor para Carlos. ¿Has notado algún cambio físico que te preocupe?",
-        "La comunicación honesta es clave. Te sugiero hablar con el equipo médico sobre esto en la próxima visita.",
-        "Te envío mucha fortaleza. No olvides que también eres importante en este proceso."
-      ];
-      setMessages(prev => [...prev, { role: 'ai', text: responses[Math.floor(Math.random() * responses.length)] }]);
-      setIsTyping(false);
-    }, 1500);
-  };
+  const userMsg = inputText;
+
+  // Construir historial actualizado
+  const updatedMessages = [
+    ...messages,
+    { role: 'user' as const, text: userMsg }
+  ];
+
+  // UI inmediata
+  setMessages(updatedMessages);
+  setInputText('');
+
+  try {
+    setIsLoading(true);
+
+    // Puedes pasar contexto del paciente si quieres personalización
+    const context = patient 
+      ? `Estás hablando con un familiar de ${patient.name}. Sé empático, claro y humano.`
+      : undefined;
+
+    const reply = await sendMessage(updatedMessages, context);
+
+    setMessages(prev => [
+      ...prev,
+      { role: 'ai', text: reply }
+    ]);
+
+  } catch (error) {
+    console.error(error);
+
+    setMessages(prev => [
+      ...prev,
+      { role: 'ai', text: "Lo siento, hubo un problema al responder. Intenta nuevamente." }
+    ]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="h-full bg-app-bg overflow-y-auto">
@@ -142,12 +168,11 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
                     </div>
                   </div>
                 ))}
-                {isTyping && (
+                {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-white p-4 rounded-2xl border border-gray-100 flex gap-1">
-                      <div className="w-1.5 h-1.5 bg-primary-light animate-bounce" />
-                      <div className="w-1.5 h-1.5 bg-primary-light animate-bounce delay-100" />
-                      <div className="w-1.5 h-1.5 bg-primary-light animate-bounce delay-200" />
+                    <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <span className="text-xs text-text-sub">Escribiendo...</span>
                     </div>
                   </div>
                 )}
