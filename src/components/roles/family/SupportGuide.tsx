@@ -6,6 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../../../AppContext';
+import { sendMessage } from "../../../services/gemini";
 import { 
   ArrowLeft, 
   MessageCircle, 
@@ -27,10 +28,11 @@ interface SupportGuideProps {
 const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
   const { patient } = useAppContext();
   const [messages, setMessages] = useState<{role: 'ai' | 'user', text: string}[]>([
-    { role: 'ai', text: 'Hola, soy tu guía de apoyo emocional. Entiendo que este camino puede ser difícil. ¿En qué puedo orientarte hoy?' }
+    { role: 'ai', text: 'Hola, soy tu guía de apoyo emocional. Estoy aquí para acompañarte. ¿En qué puedo orientarte hoy?' }
   ]);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +58,7 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
     }
   ];
 
+<<<<<<< HEAD
   const buildChatHistory = (): ChatMessage[] => {
     return messages.map(msg => ({
       role: msg.role === 'user' ? 'user' as const : 'model' as const,
@@ -90,6 +93,54 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
     }
     setIsTyping(false);
   };
+=======
+ const handleSend = async () => {
+  if (!inputText.trim() || isLoading) return;
+
+  const userMsg = inputText;
+
+  // Construir historial actualizado
+  const updatedMessages = [
+    ...messages,
+    { role: 'user' as const, text: userMsg }
+  ];
+
+  // UI inmediata
+  setMessages(updatedMessages);
+  setInputText('');
+
+  try {
+    setIsLoading(true);
+
+    // Puedes pasar contexto del paciente si quieres personalización
+    const context = patient 
+      ? `Estás hablando con un familiar de ${patient.name}. Eres un guía emocional para familiares de pacientes en cuidado paliativo.
+        - Sé empático pero no infantil
+        - Da consejos prácticos
+        - No des diagnósticos médicos
+        - Valida emociones
+        No te extiendas, se conciso a menos que te pidan mas detalle.`
+      : undefined;
+
+    const reply = await sendMessage(updatedMessages, context);
+
+    setMessages(prev => [
+      ...prev,
+      { role: 'ai', text: reply }
+    ]);
+
+  } catch (error) {
+    console.error(error);
+
+    setMessages(prev => [
+      ...prev,
+      { role: 'ai', text: "Lo siento, hubo un problema al responder. Intenta nuevamente." }
+    ]);
+  } finally {
+    setIsLoading(false);
+  }
+};
+>>>>>>> origin/prieto
 
   return (
     <div className="h-full bg-app-bg overflow-y-auto">
@@ -160,12 +211,11 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
                     </div>
                   </div>
                 ))}
-                {isTyping && (
+                {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-white p-4 rounded-2xl border border-gray-100 flex gap-1">
-                      <div className="w-1.5 h-1.5 bg-primary-light animate-bounce" />
-                      <div className="w-1.5 h-1.5 bg-primary-light animate-bounce delay-100" />
-                      <div className="w-1.5 h-1.5 bg-primary-light animate-bounce delay-200" />
+                    <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <span className="text-xs text-text-sub">Escribiendo...</span>
                     </div>
                   </div>
                 )}
