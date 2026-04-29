@@ -58,42 +58,6 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
     }
   ];
 
-<<<<<<< HEAD
-  const buildChatHistory = (): ChatMessage[] => {
-    return messages.map(msg => ({
-      role: msg.role === 'user' ? 'user' as const : 'model' as const,
-      parts: [{ text: msg.text }],
-    }));
-  };
-
-  const handleSend = async () => {
-    if (!inputText.trim() || isTyping) return;
-    const userMsg = inputText;
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setInputText('');
-    setIsTyping(true);
-
-    if (isAIAvailable()) {
-      try {
-        const history = buildChatHistory();
-        const aiResponse = await sendFamilyMessage(history, userMsg);
-        setMessages(prev => [...prev, { role: 'ai', text: aiResponse }]);
-      } catch {
-        setMessages(prev => [...prev, { role: 'ai', text: 'Disculpa, tuve un problema para responder. ¿Puedes intentar de nuevo?' }]);
-      }
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const responses = [
-        "Es completamente normal sentirse agotado en este proceso. ¿Tienes a alguien con quien compartir la carga hoy?",
-        "Entiendo tu preocupación. Es valioso que quieras lo mejor para Carlos. ¿Has notado algún cambio físico que te preocupe?",
-        "La comunicación honesta es clave. Te sugiero hablar con el equipo médico sobre esto en la próxima visita.",
-        "Te envío mucha fortaleza. No olvides que también eres importante en este proceso."
-      ];
-      setMessages(prev => [...prev, { role: 'ai', text: responses[Math.floor(Math.random() * responses.length)] }]);
-    }
-    setIsTyping(false);
-  };
-=======
  const handleSend = async () => {
   if (!inputText.trim() || isLoading) return;
 
@@ -140,7 +104,6 @@ const SupportGuide: React.FC<SupportGuideProps> = ({ onBack }) => {
     setIsLoading(false);
   }
 };
->>>>>>> origin/prieto
 
   return (
     <div className="h-full bg-app-bg overflow-y-auto">

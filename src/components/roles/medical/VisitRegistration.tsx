@@ -3,26 +3,6 @@
    * SPDX-License-Identifier: Apache-2.0
    */
 
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useAppContext } from '../../../AppContext';
-import { 
-  ArrowLeft, 
-  Check, 
-  Camera, 
-  Sparkles, 
-  Activity, 
-  Pill, 
-  FileText, 
-  Calendar,
-  AlertCircle,
-  Loader2,
-  Trash2,
-  Plus
-} from 'lucide-react';
-import { analyzeFacialExpression, isAIAvailable } from '../../../services/gemini';
-=======
   import React, { useState } from 'react';
   import { motion, AnimatePresence } from 'motion/react';
   import { useAppContext } from '../../../AppContext';
@@ -41,33 +21,11 @@ import { analyzeFacialExpression, isAIAvailable } from '../../../services/gemini
     Trash2,
     Plus
   } from 'lucide-react';
->>>>>>> origin/prieto
 
   interface VisitRegistrationProps {
     onBack: () => void;
   }
 
-<<<<<<< HEAD
-const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
-  const { addAlert } = useAppContext();
-  const [step, setStep] = useState(1);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
-  const [observationContext, setObservationContext] = useState('');
-  
-  // Form State
-  const [vitals, setVitals] = useState({
-    rr: '18',
-    hr: '72',
-    bp_sys: '120',
-    bp_dia: '80',
-    spo2: '96',
-    temp: '36.5',
-    pain: 2,
-    consciousness: 'Alerta',
-    mobility: 'Con ayuda'
-  });
-=======
   const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
     const { addAlert } = useAppContext();
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -87,7 +45,6 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
       consciousness: 'Alerta',
       mobility: 'Con ayuda'
     });
->>>>>>> origin/prieto
 
       // Función para convertir el archivo de imagen a Base64
     const convertFileToBase64 = (file) => {
@@ -115,26 +72,8 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
 
     const [meds, setMeds] = useState([{ name: 'Morfina', dose: '5mg c/4h' }]);
 
-<<<<<<< HEAD
-  const handleAnalyze = async () => {
-    setIsAnalyzing(true);
-    if (isAIAvailable()) {
-      try {
-        const result = await analyzeFacialExpression(observationContext);
-        setAnalysisResult(result);
-      } catch {
-        setAnalysisResult("No se pudo completar el análisis. Intente de nuevo.");
-      }
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setAnalysisResult("Expresión facial: Tranquilidad con algo de fatiga. Nivel de malestar estimado: Bajo (3/10). Recomendación: Mantener plan actual.");
-    }
-    setIsAnalyzing(false);
-  };
-=======
     const handleAnalyze = async () => {
       if (!selectedImage) return;
->>>>>>> origin/prieto
 
       setIsAnalyzing(true);
 
@@ -197,65 +136,6 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
           </div>
         </header>
 
-<<<<<<< HEAD
-      <main className="max-w-4xl mx-auto p-6 md:p-10 space-y-8 pb-32">
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-6">
-                 <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" /> Sección 1: Datos Básicos
-                 </h3>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-xs font-black text-text-sub uppercase tracking-widest">Fecha y Hora</label>
-                      <input type="text" readOnly value={new Date().toLocaleString()} className="w-full bg-surface-soft p-3 rounded-xl border-none outline-none text-sm font-medium" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-black text-text-sub uppercase tracking-widest">Médico Responsable</label>
-                      <select className="w-full bg-surface-soft p-3 rounded-xl border-none outline-none text-sm font-medium">
-                        <option>Dra. Ana Lucía Restrepo</option>
-                        <option>Dr. Julián Vásquez</option>
-                      </select>
-                    </div>
-                 </div>
-              </div>
-            </motion.div>
-          )}
-
-          {step === 2 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-6">
-                 <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-primary" /> Sección 2: Análisis Visual con IA
-                 </h3>
-                 <div className="space-y-6">
-                    <div className="aspect-video bg-surface-soft rounded-3xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200">
-                      <Camera className="w-12 h-12 text-gray-300 mb-2" />
-                      <button className="text-primary font-bold text-sm bg-white px-6 py-2 rounded-xl shadow-sm mt-4">Tomar foto o subir</button>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-black text-text-sub uppercase tracking-widest">Observación clínica del paciente</label>
-                      <textarea
-                        value={observationContext}
-                        onChange={(e) => setObservationContext(e.target.value)}
-                        placeholder="Ej: Paciente en reposo, ojos entreabiertos, respiración pausada, expresión facial relajada..."
-                        className="w-full bg-surface-soft p-4 rounded-2xl outline-none min-h-[80px] text-sm border border-transparent focus:border-primary/20 transition-all"
-                      />
-                    </div>
-                    <button 
-                      onClick={handleAnalyze} 
-                      disabled={isAnalyzing}
-                      className="w-full py-4 bg-primary/10 text-primary rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary/20 transition-all"
-                    >
-                      {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-                      {isAnalyzing ? 'Analizando con Gemini...' : 'Analizar estado con IA'}
-                    </button>
-                    {analysisResult && (
-                      <div className="p-4 bg-success/5 border border-success/20 rounded-2xl text-sm text-text-main leading-relaxed whitespace-pre-wrap">
-                        <p className="font-bold text-primary mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4" /> Resultado del análisis IA</p>
-                        {analysisResult}
-=======
         <main className="max-w-4xl mx-auto p-6 md:p-10 space-y-8 pb-32">
           <AnimatePresence mode="wait">
             {step === 1 && (
@@ -268,7 +148,6 @@ const VisitRegistration: React.FC<VisitRegistrationProps> = ({ onBack }) => {
                       <div className="space-y-2">
                         <label className="text-xs font-black text-text-sub uppercase tracking-widest">Fecha y Hora</label>
                         <input type="text" readOnly value={new Date().toLocaleString()} className="w-full bg-surface-soft p-3 rounded-xl border-none outline-none text-sm font-medium" />
->>>>>>> origin/prieto
                       </div>
                       <div className="space-y-2">
                         <label className="text-xs font-black text-text-sub uppercase tracking-widest">Médico Responsable</label>

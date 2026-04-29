@@ -52,57 +52,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
     { state: 'motivated', label: 'Con ánimo', emoji: '💪' },
   ];
 
-<<<<<<< HEAD
-  // Build Gemini chat history from our messages
-  const buildChatHistory = (): ChatMessage[] => {
-    return messages
-      .filter(msg => msg.type !== 'audio') // skip audio placeholders
-      .map(msg => ({
-        role: msg.role === 'user' ? 'user' as const : 'model' as const,
-        parts: [{ text: msg.text }],
-      }));
-  };
-
-  const handleEmotionSelect = (state: EmotionalState) => {
-    updateEmotionalState(state);
-    setHasCheckedIn(true);
-    const label = emotionOptions.find(e => e.state === state)?.label || state;
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', text: `Gracias por contarme que hoy te sientes ${label.toLowerCase()}. Estoy aquí para ti.` }]);
-    }, 500);
-  };
-
-  const handleSend = async () => {
-    if (!inputText.trim() || isThinking) return;
-    const userMsg = inputText;
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setInputText('');
-    setIsThinking(true);
-
-    if (isAIAvailable()) {
-      // Build history BEFORE adding the new user message (it's already been added to state)
-      const history = buildChatHistory();
-      try {
-        const aiResponse = await sendPatientMessage(history, userMsg);
-        setMessages(prev => [...prev, { role: 'ai', text: aiResponse }]);
-      } catch {
-        setMessages(prev => [...prev, { role: 'ai', text: 'Lo siento, no pude procesar tu mensaje. ¿Puedes intentar de nuevo?' }]);
-      }
-    } else {
-      // Fallback mock if no API key
-      setTimeout(() => {
-        const responses = [
-          "Cuéntame más sobre eso...",
-          "Ese recuerdo suena muy especial, Carlos.",
-          "¿Quieres que guardemos este pensamiento para tu familia?",
-          "Entiendo perfectamente. Es valioso que compartas esto conmigo."
-        ];
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-        setMessages(prev => [...prev, { role: 'ai', text: randomResponse }]);
-      }, 1000);
-    }
-    setIsThinking(false);
-=======
   const getInitialMessage = (state: EmotionalState) => {
   switch (state) {
     case 'sad':
@@ -130,7 +79,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
     setMessages([
       { role: 'ai', text: initialAIMessage }
     ]);
->>>>>>> origin/prieto
   };
 
   const handleSend = async () => {
@@ -292,26 +240,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onBack }) => {
             </div>
           </motion.div>
         ))}
-<<<<<<< HEAD
-        {isThinking && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex justify-start"
-          >
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm rounded-bl-none flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              <span className="text-sm text-text-sub">Pensando...</span>
-            </div>
-          </motion.div>
-=======
         {isLoading && (
             <div className="flex justify-start">
               <div className="bg-white text-text-sub border border-gray-100 p-4 rounded-2xl shadow-sm max-w-[80%]">
                 <p className="text-sm">Escribiendo...</p>
               </div>
             </div>
->>>>>>> origin/prieto
         )}
       </div>
 
