@@ -55,21 +55,20 @@
 
       try {
         const prompt = `
-    Eres un asistente clínico en cuidados paliativos.
+          Eres un asistente clínico en cuidados paliativos.
 
-    Analiza la imagen de un paciente y responde en este formato:
+          Analiza la imagen y responde:
 
-    - Expresión facial:
-    - Nivel de malestar (0-10):
-    - Signos visibles relevantes:
-    - Recomendación breve:
+          - Expresión facial:
+          - Nivel de malestar (0-10):
+          - Signos visibles:
+          - Recomendación breve:
+          `;
 
-    Sé prudente. No inventes diagnósticos. Usa lenguaje clínico simple.
-    `;
-
-        const reply = await sendImage([
-          { role: 'user', text: prompt + `\nImagen: ${selectedImage}` }
-        ]);
+        const reply = await sendImage({
+          prompt,
+          image: selectedImage
+        });
 
         setAnalysisResult(reply);
 
