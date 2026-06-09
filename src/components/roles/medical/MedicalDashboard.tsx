@@ -125,13 +125,18 @@ const MedicalDashboard: React.FC<MedicalDashboardProps> = ({ onViewChange }) => 
                 </div>
                 <p className="text-xs font-bold text-text-main mb-3">{alert.message}</p>
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={() => resolveAlert(alert.id)}
                     className="text-[10px] font-black uppercase bg-surface-soft px-3 py-1.5 rounded-lg hover:bg-success/10 hover:text-success transition-all"
                   >
                     Atender
                   </button>
-                  <button className="text-[10px] font-black uppercase bg-surface-soft px-3 py-1.5 rounded-lg">Ver perfil</button>
+                  <button
+                    onClick={() => onViewChange('profile')}
+                    className="text-[10px] font-black uppercase bg-surface-soft px-3 py-1.5 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
+                  >
+                    Ver perfil
+                  </button>
                 </div>
               </div>
             </motion.div>

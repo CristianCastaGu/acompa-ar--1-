@@ -150,6 +150,7 @@ export interface DemographicDimension {
   socioeconomicLevel: 'estrato_1_2' | 'estrato_3_4' | 'estrato_5_6';
   educationLevel: 'sin_escolaridad' | 'primaria' | 'secundaria' | 'universitario' | 'posgrado';
   religiosity: 'alta' | 'media' | 'baja' | 'sin_creencia';
+  nativeLanguage: 'español' | 'ingles' | 'portugues' | 'frances' | 'lengua_indigena' | 'otro';
 }
 
 // Dimensión 4 — Relacional (el cuidador como actor clave)
@@ -157,7 +158,8 @@ export interface RelationalDimension {
   caregiverType: 'familiar_directo' | 'profesional' | 'voluntario' | 'sin_cuidador';
   contactFrequency: '24_7' | 'visitas_diarias' | 'visitas_semanales' | 'esporadico';
   caregiverBurnout: CaregiverBurnoutLevel;
-  caregiverSignals: string[];  // 'llanto_frecuente' | 'aislamiento' | 'rechazo_comer' | etc.
+  caregiverSignals: string[];      // señales observadas en el paciente
+  caregiverSelfSignals: string[];  // señales que detecta el cuidador en sí mismo
   relationshipQuality: 'muy_cercana' | 'cercana' | 'distante' | 'conflictiva';
   familySupportNetwork: 'extensa' | 'moderada' | 'minima' | 'sin_red';
 }
@@ -212,6 +214,19 @@ export interface TherapeuticRecommendation {
     reviewedAt: Date;
     reviewedBy: string;
   };
+}
+
+// Paciente gestionado por el cuidador
+export interface ManagedPatient {
+  id: string;
+  name: string;
+  age: number;
+  diagnosis: string;
+  neurologicalDisease: string;
+  status: 'active' | 'inactive';
+  notes?: string;
+  createdAt: Date;
+  source: 'manual' | 'supabase';
 }
 
 // Observación del cuidador

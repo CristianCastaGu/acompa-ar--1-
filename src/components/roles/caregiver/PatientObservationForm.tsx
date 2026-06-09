@@ -62,6 +62,7 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
     socioeconomicLevel: 'estrato_3_4',
     educationLevel: 'universitario',
     religiosity: 'media',
+    nativeLanguage: 'español',
   });
 
   // ── Dimensión 4: Relacional
@@ -70,6 +71,7 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
     contactFrequency: '24_7',
     caregiverBurnout: 'leve',
     caregiverSignals: [],
+    caregiverSelfSignals: [],
     relationshipQuality: 'muy_cercana',
     familySupportNetwork: 'moderada',
   });
@@ -262,6 +264,18 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
                 { value: 'agitacion', label: 'Agitación' },
               ]}
             />
+            <CheckGroup label="Medicación Psicoactiva Actual" selected={clinical.currentMedication}
+              onChange={v => setClinical(p => ({ ...p, currentMedication: v }))}
+              options={[
+                { value: 'antidepresivos_isrs', label: 'Antidepresivos ISRS' },
+                { value: 'antidepresivos_irsn', label: 'Antidepresivos IRSN' },
+                { value: 'benzodiacepinas', label: 'Benzodiacepinas' },
+                { value: 'antipsicoticos', label: 'Antipsicóticos' },
+                { value: 'estabilizadores', label: 'Estabilizadores del ánimo' },
+                { value: 'opioides', label: 'Opioides (dolor)' },
+                { value: 'sin_medicacion', label: 'Sin medicación' },
+              ]}
+            />
           </div>
         );
 
@@ -389,6 +403,17 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
                 { value: 'sin_creencia', label: 'Sin creencia religiosa' },
               ]}
             />
+            <Select label="Idioma Materno" value={demographic.nativeLanguage}
+              onChange={v => setDemographic(p => ({ ...p, nativeLanguage: v as DemographicDimension['nativeLanguage'] }))}
+              options={[
+                { value: 'español', label: 'Español' },
+                { value: 'ingles', label: 'Inglés' },
+                { value: 'portugues', label: 'Portugués' },
+                { value: 'frances', label: 'Francés' },
+                { value: 'lengua_indigena', label: 'Lengua indígena' },
+                { value: 'otro', label: 'Otro' },
+              ]}
+            />
           </div>
         );
 
@@ -435,6 +460,15 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
                 ]}
               />
             </div>
+            <Select label="Nivel de burnout del cuidador" value={relational.caregiverBurnout}
+              onChange={v => setRelational(p => ({ ...p, caregiverBurnout: v as RelationalDimension['caregiverBurnout'] }))}
+              options={[
+                { value: 'sin_burnout', label: 'Sin burnout — Cuidando bien' },
+                { value: 'leve', label: 'Leve — Algo de cansancio' },
+                { value: 'moderado', label: 'Moderado — Sobrecarga notable' },
+                { value: 'severo', label: 'Severo — Agotamiento crítico' },
+              ]}
+            />
             <CheckGroup label="Señales observadas en el paciente" selected={relational.caregiverSignals}
               onChange={v => setRelational(p => ({ ...p, caregiverSignals: v }))}
               options={[
@@ -444,6 +478,18 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
                 { value: 'insomnio_visible', label: 'Insomnio visible' },
                 { value: 'agitacion', label: 'Agitación' },
                 { value: 'sin_señales', label: 'Sin señales de alerta' },
+              ]}
+            />
+            <CheckGroup label="Señales que detecta el cuidador en sí mismo" selected={relational.caregiverSelfSignals}
+              onChange={v => setRelational(p => ({ ...p, caregiverSelfSignals: v }))}
+              options={[
+                { value: 'agotamiento_fisico', label: 'Agotamiento físico' },
+                { value: 'agotamiento_emocional', label: 'Agotamiento emocional' },
+                { value: 'aislamiento_social', label: 'Aislamiento social' },
+                { value: 'ansiedad', label: 'Ansiedad / angustia' },
+                { value: 'irritabilidad', label: 'Irritabilidad frecuente' },
+                { value: 'descuido_personal', label: 'Descuido del autocuidado' },
+                { value: 'sin_señales', label: 'Sin señales propias' },
               ]}
             />
           </div>

@@ -12,16 +12,17 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  Users,
 } from 'lucide-react';
 
-type CaregiverView = 'dashboard' | 'observation' | 'burnout' | 'recommendation';
+type CaregiverView = 'dashboard' | 'observation' | 'burnout' | 'recommendation' | 'patients';
 
 interface Props {
   onViewChange: (view: CaregiverView) => void;
 }
 
 const CuidadorDashboard: React.FC<Props> = ({ onViewChange }) => {
-  const { patient, algorithmProfile, therapeuticRecommendation, addAlert } = useAppContext();
+  const { patient, algorithmProfile, therapeuticRecommendation, addAlert, managedPatients, activeManagedPatient } = useAppContext();
 
   const handleEmergencyAlert = () => {
     addAlert({
@@ -43,7 +44,18 @@ const CuidadorDashboard: React.FC<Props> = ({ onViewChange }) => {
 
   const emotion = emotionLabels[patient.currentEmotionalState] ?? emotionLabels.neutral;
 
+  const activeCount = managedPatients.filter(p => p.status === 'active').length;
+
   const actionCards = [
+    {
+      view: 'patients' as CaregiverView,
+      icon: <Users className="w-7 h-7" />,
+      title: 'Mis Pacientes',
+      description: 'Gestiona la lista de pacientes, agrega nuevos y elige con cuál trabajar.',
+      color: 'bg-blue-50 text-blue-600',
+      badge: activeManagedPatient ? `Trabajando con ${activeManagedPatient.name.split(' ')[0]}` : `${activeCount} activos`,
+      badgeColor: activeManagedPatient ? 'bg-success/10 text-success' : 'bg-blue-50 text-blue-600',
+    },
     {
       view: 'observation' as CaregiverView,
       icon: <ClipboardList className="w-7 h-7" />,
@@ -177,7 +189,7 @@ const CuidadorDashboard: React.FC<Props> = ({ onViewChange }) => {
       {/* Action Cards */}
       <div>
         <h3 className="text-sm font-black text-text-sub uppercase tracking-widest mb-4">Acciones disponibles</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {actionCards.map((card, idx) => (
             <motion.button
               key={card.view}

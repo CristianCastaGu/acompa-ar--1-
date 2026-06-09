@@ -12,6 +12,7 @@ import {
   Alert,
   PatientAlgorithmProfile,
   TherapeuticRecommendation,
+  ManagedPatient,
 } from './types';
 import { INITIAL_PATIENT_DATA } from './mockData';
 
@@ -26,6 +27,13 @@ interface AppContextType extends AppState {
   therapeuticRecommendation: TherapeuticRecommendation | null;
   setAlgorithmProfile: (profile: PatientAlgorithmProfile) => void;
   setTherapeuticRecommendation: (rec: TherapeuticRecommendation) => void;
+  // Patient management (cuidador)
+  managedPatients: ManagedPatient[];
+  activeManagedPatient: ManagedPatient | null;
+  addManagedPatient: (p: Omit<ManagedPatient, 'id' | 'createdAt'>) => void;
+  setActiveManagedPatient: (p: ManagedPatient | null) => void;
+  updateManagedPatientStatus: (id: string, status: 'active' | 'inactive') => void;
+  setManagedPatients: (patients: ManagedPatient[]) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -35,6 +43,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [patient, setPatient] = useState<PatientData>(INITIAL_PATIENT_DATA);
   const [algorithmProfile, setAlgorithmProfileState] = useState<PatientAlgorithmProfile | null>(null);
   const [therapeuticRecommendation, setTherapeuticRecommendationState] = useState<TherapeuticRecommendation | null>(null);
+  const [managedPatients, setManagedPatientsState] = useState<ManagedPatient[]>([]);
+  const [activeManagedPatient, setActiveManagedPatientState] = useState<ManagedPatient | null>(null);
 
   const setRole = (newRole: Role) => setRoleState(newRole);
 
@@ -78,6 +88,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTherapeuticRecommendationState(rec);
   };
 
+  const addManagedPatient = (p: Omit<ManagedPatient, 'id' | 'createdAt'>) => {
+    const newPatient: ManagedPatient = {
+      ...p,
+      id: `mp-${Date.now()}`,
+      createdAt: new Date(),
+    };
+    setManagedPatientsState(prev => [newPatient, ...prev]);
+  };
+
+  const setActiveManagedPatient = (p: ManagedPatient | null) => {
+    setActiveManagedPatientState(p);
+  };
+
+  const updateManagedPatientStatus = (id: string, status: 'active' | 'inactive') => {
+    setManagedPatientsState(prev =>
+      prev.map(p => (p.id === id ? { ...p, status } : p))
+    );
+  };
+
+  const setManagedPatients = (patients: ManagedPatient[]) => {
+    setManagedPatientsState(patients);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -93,6 +126,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         therapeuticRecommendation,
         setAlgorithmProfile,
         setTherapeuticRecommendation,
+        managedPatients,
+        activeManagedPatient,
+        addManagedPatient,
+        setActiveManagedPatient,
+        updateManagedPatientStatus,
+        setManagedPatients,
       }}
     >
       {children}
