@@ -22,7 +22,7 @@ interface MedicalDashboardProps {
 }
 
 const MedicalDashboard: React.FC<MedicalDashboardProps> = ({ onViewChange }) => {
-  const { patient, resolveAlert, managedPatients } = useAppContext();
+  const { patient, resolveAlert, managedPatients, setSelectedMedicalPatient } = useAppContext();
   const [search, setSearch] = useState('');
 
   const urgencyLabels: Record<string, string> = {
@@ -165,7 +165,7 @@ const MedicalDashboard: React.FC<MedicalDashboardProps> = ({ onViewChange }) => 
                   </td>
                   <td className="px-6 py-5">
                     <button
-                      onClick={() => onViewChange('profile')}
+                      onClick={() => { setSelectedMedicalPatient(p); onViewChange('profile'); }}
                       className="flex items-center gap-1 text-primary font-bold text-xs uppercase tracking-widest hover:underline"
                     >
                       Ver Perfil <ChevronRight className="w-4 h-4" />

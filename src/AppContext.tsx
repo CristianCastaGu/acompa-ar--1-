@@ -34,6 +34,9 @@ interface AppContextType extends AppState {
   setActiveManagedPatient: (p: ManagedPatient | null) => void;
   updateManagedPatientStatus: (id: string, status: 'active' | 'inactive') => void;
   setManagedPatients: (patients: ManagedPatient[]) => void;
+  // Patient selected in medical dashboard
+  selectedMedicalPatient: ManagedPatient | null;
+  setSelectedMedicalPatient: (p: ManagedPatient | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -45,6 +48,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [therapeuticRecommendation, setTherapeuticRecommendationState] = useState<TherapeuticRecommendation | null>(null);
   const [managedPatients, setManagedPatientsState] = useState<ManagedPatient[]>([]);
   const [activeManagedPatient, setActiveManagedPatientState] = useState<ManagedPatient | null>(null);
+  const [selectedMedicalPatient, setSelectedMedicalPatientState] = useState<ManagedPatient | null>(null);
 
   const setRole = (newRole: Role) => setRoleState(newRole);
 
@@ -111,6 +115,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setManagedPatientsState(patients);
   };
 
+  const setSelectedMedicalPatient = (p: ManagedPatient | null) => {
+    setSelectedMedicalPatientState(p);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -132,6 +140,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setActiveManagedPatient,
         updateManagedPatientStatus,
         setManagedPatients,
+        selectedMedicalPatient,
+        setSelectedMedicalPatient,
       }}
     >
       {children}
