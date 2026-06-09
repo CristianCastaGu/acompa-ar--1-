@@ -26,7 +26,8 @@ const STEPS = [
 ];
 
 const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
-  const { patient, setAlgorithmProfile, setTherapeuticRecommendation, addAlert } = useAppContext();
+  const { patient, activeManagedPatient, setAlgorithmProfile, setTherapeuticRecommendation, addAlert } = useAppContext();
+  const patientName = activeManagedPatient?.name ?? patient.name;
   const [step, setStep] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -95,7 +96,7 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
     const profile: PatientAlgorithmProfile = {
       id: `prof-${Date.now()}`,
       patientId: patient.id,
-      patientName: patient.name,
+      patientName: patientName,
       clinical,
       emotional,
       demographic,
@@ -113,7 +114,7 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
       addAlert({
         type: 'critical',
         category: 'suicidal',
-        message: `⚠️ ALERTA MÁXIMA: Indicadores de ideación suicida detectados en ${patient.name}. Intervención inmediata requerida.`,
+        message: `⚠️ ALERTA MÁXIMA: Indicadores de ideación suicida detectados en ${patientName}. Intervención inmediata requerida.`,
       });
     }
 
@@ -563,7 +564,7 @@ const PatientObservationForm: React.FC<Props> = ({ onBack, onComplete }) => {
         </button>
         <div>
           <h2 className="text-2xl font-bold text-primary">Registro de Observación</h2>
-          <p className="text-text-sub text-sm font-medium">Perfil clínico de {patient.name} · {STEPS[step].emoji} Dimensión {step + 1}/5: {STEPS[step].label}</p>
+          <p className="text-text-sub text-sm font-medium">Perfil clínico de {patientName} · {STEPS[step].emoji} Dimensión {step + 1}/5: {STEPS[step].label}</p>
         </div>
       </div>
 

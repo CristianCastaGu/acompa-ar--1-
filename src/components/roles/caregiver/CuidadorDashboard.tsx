@@ -113,12 +113,18 @@ const CuidadorDashboard: React.FC<Props> = ({ onViewChange }) => {
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-1">
-            <h3 className="text-2xl font-bold text-text-main">{patient.name}</h3>
+            <h3 className="text-2xl font-bold text-text-main">
+              {activeManagedPatient ? activeManagedPatient.name : patient.name}
+            </h3>
             <span className="text-xs font-bold px-3 py-1 bg-primary/10 text-primary rounded-full uppercase tracking-widest">
               Paciente activo
             </span>
           </div>
-          <p className="text-text-sub text-sm font-medium">{patient.diagnosis} · {patient.age} años · {patient.daysInCare} días en cuidado</p>
+          <p className="text-text-sub text-sm font-medium">
+            {activeManagedPatient
+              ? `${activeManagedPatient.diagnosis} · ${activeManagedPatient.age} años`
+              : `${patient.diagnosis} · ${patient.age} años · ${patient.daysInCare} días en cuidado`}
+          </p>
         </div>
         <div className="flex items-center gap-3 px-5 py-3 bg-surface-soft rounded-2xl">
           <span className="text-3xl">{emotion.emoji}</span>

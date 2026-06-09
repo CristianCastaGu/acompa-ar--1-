@@ -9,7 +9,7 @@ import PatientManagement from './caregiver/PatientManagement';
 type CaregiverView = 'dashboard' | 'observation' | 'burnout' | 'recommendation' | 'patients';
 
 const CuidadorRole: React.FC = () => {
-  const [view, setView] = useState<CaregiverView>('dashboard');
+  const [view, setView] = useState<CaregiverView>('patients');
 
   return (
     <div className="h-full bg-app-bg relative">
