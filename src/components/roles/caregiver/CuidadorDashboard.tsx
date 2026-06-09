@@ -24,13 +24,15 @@ interface Props {
 const CuidadorDashboard: React.FC<Props> = ({ onViewChange }) => {
   const { patient, algorithmProfile, therapeuticRecommendation, addAlert, managedPatients, activeManagedPatient } = useAppContext();
 
+  const currentPatientName = activeManagedPatient?.name ?? patient.name;
+
   const handleEmergencyAlert = () => {
     addAlert({
       type: 'critical',
       category: 'emotion',
-      message: `🚨 ALERTA DE EMERGENCIA: El cuidador ha solicitado atención urgente para ${patient.name}.`,
+      message: `🚨 ALERTA DE EMERGENCIA: El cuidador ha solicitado atención urgente para ${currentPatientName}.`,
     });
-    alert(`Alerta de emergencia enviada al equipo médico para ${patient.name}.\nEl médico de guardia será notificado en menos de 5 minutos.`);
+    alert(`Alerta de emergencia enviada al equipo médico para ${currentPatientName}.\nEl médico de guardia será notificado en menos de 5 minutos.`);
   };
 
   const emotionLabels: Record<string, { label: string; emoji: string; color: string }> = {
