@@ -11,8 +11,9 @@ import VisitRegistration from './medical/VisitRegistration';
 import ClinicalMonitoring from './medical/ClinicalMonitoring';
 import EmotionalHistory from './medical/EmotionalHistory';
 import PatientClinicalHistory from './medical/PatientClinicalHistory';
+import AlgorithmRecommendation from './medical/AlgorithmRecommendation';
 
-type MedicalView = 'dashboard' | 'profile' | 'visit' | 'monitoring' | 'emotional' | 'clinical';
+type MedicalView = 'dashboard' | 'profile' | 'visit' | 'monitoring' | 'emotional' | 'clinical' | 'algorithm';
 
 const MedicalRole: React.FC = () => {
   const [view, setView] = useState<MedicalView>('dashboard');
@@ -34,6 +35,7 @@ const MedicalRole: React.FC = () => {
           {view === 'monitoring' && <ClinicalMonitoring onBack={() => setView('profile')} />}
           {view === 'emotional' && <EmotionalHistory onBack={() => setView('profile')} />}
           {view === 'clinical' && <PatientClinicalHistory onBack={() => setView('profile')} />}
+          {view === 'algorithm' && <AlgorithmRecommendation onBack={() => setView('dashboard')} />}
         </motion.div>
       </AnimatePresence>
     </div>

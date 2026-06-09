@@ -6,19 +6,20 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useAppContext } from '../../../AppContext';
-import { 
-  AlertCircle, 
-  ChevronRight, 
-  User, 
-  Clock, 
+import {
+  AlertCircle,
+  ChevronRight,
+  User,
+  Clock,
   Activity,
   Bell,
   Search,
-  Filter
+  Filter,
+  Brain
 } from 'lucide-react';
 
 interface MedicalDashboardProps {
-  onViewChange: (view: 'dashboard' | 'profile' | 'visit' | 'monitoring' | 'emotional' | 'clinical') => void;
+  onViewChange: (view: 'dashboard' | 'profile' | 'visit' | 'monitoring' | 'emotional' | 'clinical' | 'algorithm') => void;
 }
 
 const MedicalDashboard: React.FC<MedicalDashboardProps> = ({ onViewChange }) => {
@@ -76,6 +77,30 @@ const MedicalDashboard: React.FC<MedicalDashboardProps> = ({ onViewChange }) => 
            </button>
         </div>
       </header>
+
+      {/* Algorithm Recommendation Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-primary/5 border border-primary/15 rounded-[24px] p-5 flex items-center justify-between gap-4"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Brain className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-primary mb-0.5">Algoritmo ACOMPAÑAR</p>
+            <p className="font-bold text-text-main text-sm">Recomendación terapéutica basada en DSM-5 + perfil del paciente</p>
+            <p className="text-xs text-text-sub">El cuidador ingresa el perfil · El algoritmo recomienda · El médico valida</p>
+          </div>
+        </div>
+        <button
+          onClick={() => onViewChange('algorithm')}
+          className="flex items-center gap-1 px-4 py-2.5 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 transition-all shrink-0"
+        >
+          Ver recomendación <ChevronRight className="w-4 h-4" />
+        </button>
+      </motion.div>
 
       {/* Alerts Summary */}
       <div className="space-y-4">

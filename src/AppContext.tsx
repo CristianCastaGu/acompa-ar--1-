@@ -4,7 +4,15 @@
  */
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { AppState, Role, EmotionalState, PatientData, Alert } from './types';
+import {
+  AppState,
+  Role,
+  EmotionalState,
+  PatientData,
+  Alert,
+  PatientAlgorithmProfile,
+  TherapeuticRecommendation,
+} from './types';
 import { INITIAL_PATIENT_DATA } from './mockData';
 
 interface AppContextType extends AppState {
@@ -13,6 +21,11 @@ interface AppContextType extends AppState {
   updatePatientData: (updater: (data: PatientData) => PatientData) => void;
   addAlert: (alert: Omit<Alert, 'id' | 'timestamp' | 'resolved'>) => void;
   resolveAlert: (id: string) => void;
+  // Algorithm state
+  algorithmProfile: PatientAlgorithmProfile | null;
+  therapeuticRecommendation: TherapeuticRecommendation | null;
+  setAlgorithmProfile: (profile: PatientAlgorithmProfile) => void;
+  setTherapeuticRecommendation: (rec: TherapeuticRecommendation) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -20,16 +33,16 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [role, setRoleState] = useState<Role>(null);
   const [patient, setPatient] = useState<PatientData>(INITIAL_PATIENT_DATA);
+  const [algorithmProfile, setAlgorithmProfileState] = useState<PatientAlgorithmProfile | null>(null);
+  const [therapeuticRecommendation, setTherapeuticRecommendationState] = useState<TherapeuticRecommendation | null>(null);
 
-  const setRole = (newRole: Role) => {
-    setRoleState(newRole);
-  };
+  const setRole = (newRole: Role) => setRoleState(newRole);
 
   const updateEmotionalState = (state: EmotionalState) => {
     setPatient(prev => ({
       ...prev,
       currentEmotionalState: state,
-      emotionHistory: [...prev.emotionHistory, { date: new Date(), state }]
+      emotionHistory: [...prev.emotionHistory, { date: new Date(), state }],
     }));
   };
 
@@ -42,32 +55,46 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ...alert,
       id: `alt-${Date.now()}`,
       timestamp: new Date(),
-      resolved: false
+      resolved: false,
     };
     setPatient(prev => ({
       ...prev,
-      alerts: [newAlert, ...prev.alerts]
+      alerts: [newAlert, ...prev.alerts],
     }));
   };
 
   const resolveAlert = (id: string) => {
     setPatient(prev => ({
       ...prev,
-      alerts: prev.alerts.map(a => a.id === id ? { ...a, resolved: true } : a)
+      alerts: prev.alerts.map(a => (a.id === id ? { ...a, resolved: true } : a)),
     }));
   };
 
+  const setAlgorithmProfile = (profile: PatientAlgorithmProfile) => {
+    setAlgorithmProfileState(profile);
+  };
+
+  const setTherapeuticRecommendation = (rec: TherapeuticRecommendation) => {
+    setTherapeuticRecommendationState(rec);
+  };
+
   return (
-    <AppContext.Provider value={{
-      currentRole: role,
-      currentUser: role ? { id: 'user-1', name: 'Usuario', role } : null,
-      patient,
-      setRole,
-      updateEmotionalState,
-      updatePatientData,
-      addAlert,
-      resolveAlert
-    }}>
+    <AppContext.Provider
+      value={{
+        currentRole: role,
+        currentUser: role ? { id: 'user-1', name: 'Usuario', role } : null,
+        patient,
+        setRole,
+        updateEmotionalState,
+        updatePatientData,
+        addAlert,
+        resolveAlert,
+        algorithmProfile,
+        therapeuticRecommendation,
+        setAlgorithmProfile,
+        setTherapeuticRecommendation,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

@@ -6,7 +6,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useAppContext } from '../AppContext';
-import { Heart, Users, Stethoscope, Search } from 'lucide-react';
+import { Heart, Users, Stethoscope, Search, HandHeart } from 'lucide-react';
 import { Role } from '../types';
 
 interface RoleCardProps {
@@ -14,59 +14,78 @@ interface RoleCardProps {
   title: string;
   icon: React.ReactNode;
   description: string;
+  highlight?: boolean;
   onClick: () => void;
 }
 
-const RoleCard: React.FC<RoleCardProps> = ({ title, icon, description, onClick }) => (
+const RoleCard: React.FC<RoleCardProps> = ({ title, icon, description, highlight, onClick }) => (
   <motion.button
     whileHover={{ scale: 1.05, y: -5 }}
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl flex flex-col items-center text-center group transition-all border-2 border-transparent hover:border-accent-gold/30 h-full"
+    className={`bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl flex flex-col items-center text-center group transition-all border-2 h-full ${
+      highlight
+        ? 'border-accent-gold/50 ring-2 ring-accent-gold/20'
+        : 'border-transparent hover:border-accent-gold/30'
+    }`}
   >
-    <div className="w-16 h-16 rounded-2xl bg-surface-soft flex items-center justify-center mb-4 group-hover:bg-primary-light/10 transition-colors">
-      <div className="text-primary group-hover:scale-110 transition-transform">
+    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors ${
+      highlight ? 'bg-accent-gold/15 group-hover:bg-accent-gold/20' : 'bg-surface-soft group-hover:bg-primary-light/10'
+    }`}>
+      <div className={`transition-transform group-hover:scale-110 ${highlight ? 'text-accent-gold' : 'text-primary'}`}>
         {icon}
       </div>
     </div>
     <h3 className="text-xl font-bold mb-2 text-text-main">{title}</h3>
     <p className="text-sm text-text-sub leading-relaxed">{description}</p>
+    {highlight && (
+      <span className="mt-3 text-[10px] font-black uppercase tracking-widest bg-accent-gold/15 text-accent-gold px-3 py-1 rounded-full">
+        Nuevo módulo
+      </span>
+    )}
   </motion.button>
 );
 
 const RoleSelection: React.FC = () => {
   const { setRole } = useAppContext();
 
-  const roles: { role: Role; title: string; icon: React.ReactNode; description: string }[] = [
-    { 
-      role: 'patient', 
-      title: 'Paciente', 
-      icon: <Heart size={32} />, 
-      description: 'Expresa tus emociones, guarda tus recuerdos y conéctate con los tuyos.' 
+  const roles: { role: Role; title: string; icon: React.ReactNode; description: string; highlight?: boolean }[] = [
+    {
+      role: 'patient',
+      title: 'Paciente',
+      icon: <Heart size={32} />,
+      description: 'Expresa tus emociones, guarda tus recuerdos y conéctate con los tuyos.',
     },
-    { 
-      role: 'family', 
-      title: 'Familia', 
-      icon: <Users size={32} />, 
-      description: 'Acompaña a tu ser querido, recibe orientación y preserva su legado.' 
+    {
+      role: 'caregiver',
+      title: 'Cuidador',
+      icon: <HandHeart size={32} />,
+      description: 'Registra observaciones del paciente, ejecuta el algoritmo terapéutico y recibe guía personalizada.',
+      highlight: true,
     },
-    { 
-      role: 'medical', 
-      title: 'Médico / Enfermero', 
-      icon: <Stethoscope size={32} />, 
-      description: 'Monitorea el bienestar emocional y clínico para un cuidado integral.' 
+    {
+      role: 'medical',
+      title: 'Médico / Psicólogo',
+      icon: <Stethoscope size={32} />,
+      description: 'Monitorea el bienestar clínico y valida las recomendaciones del algoritmo de acompañamiento.',
     },
-    { 
-      role: 'researcher', 
-      title: 'Investigador', 
-      icon: <Search size={32} />, 
-      description: 'Analiza datos anonimizados para mejorar los protocolos de cuidado.' 
+    {
+      role: 'family',
+      title: 'Familia',
+      icon: <Users size={32} />,
+      description: 'Acompaña a tu ser querido, recibe orientación y preserva su legado.',
+    },
+    {
+      role: 'researcher',
+      title: 'Investigador',
+      icon: <Search size={32} />,
+      description: 'Analiza datos anonimizados para mejorar los protocolos de cuidado paliativo.',
     },
   ];
 
   return (
     <div className="min-h-screen gradient-primary flex flex-col items-center justify-center p-6 md:p-12 overflow-hidden relative">
-      {/* Decorative patterns */}
+      {/* Decorative grid */}
       <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -78,23 +97,28 @@ const RoleSelection: React.FC = () => {
         </svg>
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="z-10 w-full max-w-6xl text-center"
+        className="z-10 w-full max-w-7xl text-center"
       >
         <div className="mb-12">
           <div className="inline-block p-4 rounded-3xl bg-white/20 backdrop-blur-md mb-6 shadow-2xl">
             <Heart className="w-12 h-12 text-white fill-white" />
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter drop-shadow-sm">ACOMPAÑAR</h1>
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter drop-shadow-sm">
+            ACOMPAÑAR
+          </h1>
           <p className="text-white/90 text-lg md:text-xl font-medium tracking-wide max-w-2xl mx-auto">
             Tecnología con alma para los momentos que más importan.
           </p>
+          <p className="text-white/60 text-sm mt-2 font-medium">
+            Algoritmo de Acompañamiento Paliativo v2 · Hackathon UniSabana 2026
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 px-4">
           {roles.map((item, idx) => (
             <motion.div
               key={item.role}
@@ -102,17 +126,17 @@ const RoleSelection: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 * idx, duration: 0.5 }}
             >
-              <RoleCard 
-                {...item} 
+              <RoleCard
+                {...item}
                 onClick={() => setRole(item.role)}
               />
             </motion.div>
           ))}
         </div>
       </motion.div>
-      
+
       <footer className="absolute bottom-8 text-white/60 text-sm font-medium tracking-widest uppercase">
-        Cuidado Paliativo Humanizado • 2026
+        Cuidado Paliativo Humanizado · Equipo Iron · 2026
       </footer>
     </div>
   );

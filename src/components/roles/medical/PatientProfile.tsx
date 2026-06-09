@@ -125,6 +125,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack, onViewChange })
           <div className="space-y-4">
              <h3 className="text-xs font-black text-text-sub uppercase tracking-widest pl-2">Acciones Rápidas</h3>
              {[
+               { id: 'algorithm', label: 'Recomendación Algoritmo', icon: <Brain className="w-5 h-5" /> },
                { id: 'emotional', label: 'Historial Emocional', icon: <Heart className="w-5 h-5" /> },
                { id: 'monitoring', label: 'Historial de Monitoreo', icon: <Activity className="w-5 h-5" /> },
                { id: 'clinical', label: 'Historia Clínica', icon: <FileText className="w-5 h-5" /> },

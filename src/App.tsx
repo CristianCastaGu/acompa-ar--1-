@@ -3,18 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from 'react';
 import { AppProvider, useAppContext } from './AppContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Users, 
-  Heart, 
-  Stethoscope, 
+import {
+  Users,
+  Heart,
+  Stethoscope,
   Search,
   LogOut,
   Bell,
@@ -27,6 +22,7 @@ import PatientRole from './components/roles/PatientRole';
 import FamilyRole from './components/roles/FamilyRole';
 import MedicalRole from './components/roles/MedicalRole';
 import ResearcherRole from './components/roles/ResearcherRole';
+import CuidadorRole from './components/roles/CuidadorRole';
 
 function MainContent() {
   const { currentRole, setRole, currentUser } = useAppContext();
@@ -38,6 +34,7 @@ function MainContent() {
       case 'family': return 'Familia';
       case 'medical': return 'Médico / Enfermero';
       case 'researcher': return 'Investigador';
+      case 'caregiver': return 'Cuidador';
       default: return '';
     }
   };
@@ -62,13 +59,13 @@ function MainContent() {
             </div>
 
             <div className="flex items-center gap-2 md:gap-4">
-              <button 
+              <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
               >
                 {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-              
+
               <div className="relative">
                 <button className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
                   <Bell className="w-5 h-5" />
@@ -81,7 +78,7 @@ function MainContent() {
                   <p className="text-sm font-semibold">{currentUser?.name}</p>
                   <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-text-sub'}`}>Online</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setRole(null)}
                   className={`p-2 rounded-full text-error transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
                   title="Cerrar sesión"
@@ -106,6 +103,7 @@ function MainContent() {
                 {currentRole === 'family' && <FamilyRole />}
                 {currentRole === 'medical' && <MedicalRole />}
                 {currentRole === 'researcher' && <ResearcherRole />}
+                {currentRole === 'caregiver' && <CuidadorRole />}
               </motion.div>
             </AnimatePresence>
           </main>
