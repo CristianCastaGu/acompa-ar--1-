@@ -5,8 +5,9 @@ import PatientObservationForm from './caregiver/PatientObservationForm';
 import BurnoutAssessment from './caregiver/BurnoutAssessment';
 import AlgorithmRecommendationView from './caregiver/AlgorithmRecommendationView';
 import PatientManagement from './caregiver/PatientManagement';
+import PatientDetailView from './caregiver/PatientDetailView';
 
-type CaregiverView = 'dashboard' | 'observation' | 'burnout' | 'recommendation' | 'patients';
+type CaregiverView = 'dashboard' | 'observation' | 'burnout' | 'recommendation' | 'patients' | 'patient-detail';
 
 const CuidadorRole: React.FC = () => {
   const [view, setView] = useState<CaregiverView>('patients');
@@ -28,7 +29,13 @@ const CuidadorRole: React.FC = () => {
           {view === 'patients' && (
             <PatientManagement
               onBack={() => setView('dashboard')}
-              onWorkWithPatient={() => setView('dashboard')}
+              onWorkWithPatient={() => setView('patient-detail')}
+            />
+          )}
+          {view === 'patient-detail' && (
+            <PatientDetailView
+              onBack={() => setView('patients')}
+              onAction={(v) => setView(v)}
             />
           )}
           {view === 'observation' && (
