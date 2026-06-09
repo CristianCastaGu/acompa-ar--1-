@@ -4,7 +4,6 @@ import { useAppContext } from '../../../AppContext';
 import { fetchSyntheticPatients } from '../../../lib/supabase';
 import { ManagedPatient } from '../../../types';
 import {
-  ArrowLeft,
   Plus,
   Users,
   UserCheck,
@@ -179,14 +178,9 @@ const PatientManagement: React.FC<Props> = ({ onBack, onWorkWithPatient }) => {
     <div className="max-w-4xl mx-auto p-6 md:p-10 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-            <ArrowLeft className="w-5 h-5 text-text-sub" />
-          </button>
-          <div>
-            <h2 className="text-2xl font-bold text-primary">Gestión de Pacientes</h2>
-            <p className="text-text-sub text-sm font-medium">{activeCount} activos · {managedPatients.length} total</p>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold text-primary">Gestión de Pacientes</h2>
+          <p className="text-text-sub text-sm font-medium">{activeCount} activos · {managedPatients.length} total</p>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
