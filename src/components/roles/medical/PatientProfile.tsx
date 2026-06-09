@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../../../AppContext';
 import {
   ArrowLeft,
@@ -18,8 +18,13 @@ import {
   User,
   ChevronRight,
   Database,
+  AlertCircle,
+  Stethoscope,
+  Users,
+  Dumbbell,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PATIENT_RICH_DATA } from '../../../lib/patientRichData';
 
 interface PatientProfileProps {
   onBack: () => void;
@@ -34,6 +39,41 @@ const DISEASE_LABELS: Record<string, string> = {
   esclerosis_multiple: 'Esclerosis Múltiple',
   otra: 'Otra',
 };
+
+const LABEL: Record<string, string> = {
+  tdm: 'TDM (Mayor)', subclinica: 'Subclínica', distimia: 'Distimia', sin_diagnostico: 'Sin diagnóstico',
+  leve: 'Leve', moderado: 'Moderado', grave: 'Grave',
+  unico: 'Episodio único', recurrente: 'Recurrente',
+  insomnio: 'Insomnio', hipersomnia: 'Hipersomnia', fatiga: 'Fatiga', anorexia: 'Anorexia',
+  agitacion: 'Agitación', sin_sintomas: 'Sin síntomas',
+  antidepresivos: 'Antidepresivos', ansioliticos: 'Ansiolíticos', antipsicoticos: 'Antipsicóticos',
+  sin_medicacion: 'Sin medicación', ansiedad: 'Ansiedad', toc: 'TOC', sin_señales: 'Sin señales',
+  trastorno_personalidad: 'Trastorno de personalidad', ninguna: 'Ninguna',
+  familiar_directo: 'Familiar directo', profesional: 'Profesional', voluntario: 'Voluntario',
+  '24_7': '24/7', visitas_diarias: 'Visitas diarias', visitas_semanales: 'Visitas semanales',
+  sin_burnout: 'Sin burnout', severo: 'Severo',
+  llanto_frecuente: 'Llanto frecuente', aislamiento: 'Aislamiento',
+  rechazo_comer: 'Rechazo a comer', insomnio_visible: 'Insomnio visible',
+  muy_cercana: 'Muy cercana', cercana: 'Cercana', distante: 'Distante', conflictiva: 'Conflictiva',
+  extensa: 'Red extensa', moderada: 'Moderada', minima: 'Mínima', sin_red: 'Sin red',
+  verbal_fluida: 'Verbal fluida', verbal_limitada: 'Verbal limitada',
+  solo_gestual: 'Solo gestual', sin_comunicacion_verbal: 'Sin comunicación verbal',
+  autonoma: 'Autónoma', con_apoyo: 'Con apoyo',
+  silla_de_ruedas: 'Silla de ruedas', postrado_en_cama: 'Postrado en cama',
+  conservado: 'Conservado', parcialmente_conservado: 'Parcial', perdido: 'Perdido',
+  sin_dolor: 'Sin dolor',
+  intacta: 'Intacta', levemente_deteriorada: 'Lev. deteriorada',
+  moderadamente_deteriorada: 'Mod. deteriorada', severa: 'Severa',
+  masculino: 'Masculino', femenino: 'Femenino',
+  hogar_familiar: 'Hogar familiar', hogar_unipersonal: 'Hogar unipersonal',
+  residencia_geriatrica: 'Residencia geriátrica', clinica: 'Clínica',
+  'estrato_1_2': '1–2', 'estrato_3_4': '3–4', 'estrato_5_6': '5–6',
+  sin_escolaridad: 'Sin escolaridad', primaria: 'Primaria', secundaria: 'Secundaria',
+  universitario: 'Universitario', posgrado: 'Posgrado',
+  alta: 'Alta', media: 'Media', baja: 'Baja', sin_creencia: 'Sin creencia',
+};
+
+function lbl(key: string) { return LABEL[key] ?? key.replace(/_/g, ' '); }
 
 function getEmotionalDataByStage(diagnosis: string) {
   if (diagnosis.includes('Terminal'))  return [{ name: 'S1', value: 3 }, { name: 'S2', value: 2 }, { name: 'S3', value: 2 }, { name: 'S4', value: 1 }];
@@ -72,8 +112,46 @@ function getDaysInCare(createdAt: Date): number {
   return Math.max(1, Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)));
 }
 
+function EsasBar({ label, value, warning = false }: { label: string; value: number; warning?: boolean }) {
+  const color = value >= 8 ? 'bg-error' : value >= 6 ? 'bg-orange-400' : value >= 4 ? 'bg-accent-gold' : 'bg-success';
+  const textColor = value >= 8 ? 'text-error' : value >= 6 ? 'text-orange-500' : value >= 4 ? 'text-accent-gold' : 'text-success';
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs">
+        <span className="text-text-sub font-medium">{label}</span>
+        <span className={`font-black ${warning && value >= 7 ? 'text-error' : textColor}`}>{value}/10</span>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${value * 10}%` }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className={`h-full rounded-full ${color}`}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between items-center py-1.5 border-b border-gray-50 last:border-0">
+      <span className="text-xs text-text-sub font-medium">{label}</span>
+      <span className="text-xs font-bold text-text-main">{value}</span>
+    </div>
+  );
+}
+
+const DB_TABS = [
+  { id: 'clinico',  label: 'Clínico',  icon: <Stethoscope className="w-3.5 h-3.5" /> },
+  { id: 'esas',     label: 'ESAS',     icon: <Activity className="w-3.5 h-3.5" /> },
+  { id: 'cuidador', label: 'Cuidador', icon: <Users className="w-3.5 h-3.5" /> },
+  { id: 'fisico',   label: 'Físico',   icon: <Dumbbell className="w-3.5 h-3.5" /> },
+];
+
 const PatientProfile: React.FC<PatientProfileProps> = ({ onBack, onViewChange }) => {
   const { selectedMedicalPatient, patient, algorithmProfile, therapeuticRecommendation } = useAppContext();
+  const [activeTab, setActiveTab] = useState('clinico');
 
   const p = selectedMedicalPatient;
   const name = p?.name ?? patient.name;
@@ -85,6 +163,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack, onViewChange })
   const emotionalData = p ? getEmotionalDataByStage(p.diagnosis) : [{ name: 'S1', value: 4 }, { name: 'S2', value: 3 }, { name: 'S3', value: 6 }, { name: 'S4', value: 8 }];
   const aiSummary = p ? getAISummary(p.name, p.diagnosis) : 'Sin datos de paciente seleccionado.';
   const diseaseName = p ? (DISEASE_LABELS[p.neurologicalDisease] ?? p.neurologicalDisease) : diagnosis;
+  const rich = p ? (PATIENT_RICH_DATA[p.name] ?? null) : null;
 
   const hasRec = !!therapeuticRecommendation && therapeuticRecommendation.patientName === name;
 
@@ -102,6 +181,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack, onViewChange })
                 {p?.source === 'supabase' && (
                   <span className="flex items-center gap-1 text-[10px] font-black bg-primary/10 text-primary px-2 py-1 rounded-lg">
                     <Database className="w-3 h-3" /> BD
+                  </span>
+                )}
+                {rich?.suicidal_ideation && (
+                  <span className="flex items-center gap-1 text-[10px] font-black bg-error/10 text-error px-2 py-1 rounded-lg">
+                    <AlertCircle className="w-3 h-3" /> Ideación suicida
                   </span>
                 )}
               </div>
@@ -167,7 +251,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack, onViewChange })
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Chart + AI Summary */}
+          {/* Left: Chart + AI Summary + DB Data */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 space-y-6">
               <div className="flex items-center justify-between">
@@ -223,6 +307,171 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ onBack, onViewChange })
                 </div>
               )}
             </div>
+
+            {/* DB Clinical Data Tabs */}
+            {rich && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-black text-text-sub uppercase tracking-widest flex items-center gap-2">
+                  <Database className="w-4 h-4" /> Datos clínicos (Base de datos)
+                </h3>
+
+                <div className="flex gap-2 bg-surface-soft rounded-2xl p-1">
+                  {DB_TABS.map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-white text-primary shadow-sm'
+                          : 'text-text-sub hover:text-text-main'
+                      }`}
+                    >
+                      {tab.icon}
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18 }}
+                    className="bg-white rounded-[24px] border border-gray-100 p-6"
+                  >
+                    {activeTab === 'clinico' && (
+                      <div className="space-y-5">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-surface-soft rounded-2xl p-4 text-center">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Diagnóstico</p>
+                            <p className="font-bold text-text-main text-sm">{lbl(rich.depression_diagnosis)}</p>
+                          </div>
+                          <div className="bg-surface-soft rounded-2xl p-4 text-center">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Severidad</p>
+                            <p className={`font-bold text-sm ${rich.depression_severity === 'grave' ? 'text-error' : rich.depression_severity === 'moderado' ? 'text-accent-gold' : 'text-success'}`}>
+                              {lbl(rich.depression_severity)}
+                            </p>
+                          </div>
+                          <div className="bg-surface-soft rounded-2xl p-4 text-center">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Episodio</p>
+                            <p className="font-bold text-text-main text-sm">{lbl(rich.depression_episode)}</p>
+                          </div>
+                        </div>
+                        <Row label="Género" value={lbl(rich.gender)} />
+                        <Row label="Entorno" value={lbl(rich.living_environment)} />
+                        <Row label="Estrato" value={lbl(rich.socioeconomic_level)} />
+                        <Row label="Educación" value={lbl(rich.education_level)} />
+                        <Row label="Religiosidad" value={lbl(rich.religiosity)} />
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-2">Comorbilidades psiquiátricas</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {rich.psychiatric_comorbidities.map(c => (
+                              <span key={c} className="text-[10px] font-bold bg-surface-soft text-text-sub px-2 py-0.5 rounded-lg">{lbl(c)}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-2">Síntomas somáticos</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {rich.somatic_symptoms.map(s => (
+                              <span key={s} className="text-[10px] font-bold bg-surface-soft text-text-sub px-2 py-0.5 rounded-lg">{lbl(s)}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-2">Medicación actual</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {rich.current_medication.map(m => (
+                              <span key={m} className="text-[10px] font-bold bg-surface-soft text-text-sub px-2 py-0.5 rounded-lg">{lbl(m)}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'esas' && (
+                      <div className="space-y-4">
+                        {rich.suicidal_ideation && (
+                          <div className="flex items-center gap-3 bg-error/10 border border-error/20 rounded-2xl p-4">
+                            <AlertCircle className="w-5 h-5 text-error shrink-0" />
+                            <p className="text-sm font-bold text-error">Ideación suicida detectada — requiere atención inmediata</p>
+                          </div>
+                        )}
+                        <EsasBar label="Angustia" value={rich.distress_level} warning />
+                        <EsasBar label="Soledad" value={rich.loneliness_level} warning />
+                        <EsasBar label="Miedo a la muerte" value={rich.death_fear} />
+                        <EsasBar label="Deseo de vivir" value={rich.life_desire} />
+                        <EsasBar label="Estado de ánimo diario" value={rich.daily_mood} />
+                        <div className="pt-2 border-t border-gray-100">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Tendencia emocional (7 días)</p>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${rich.emotional_trend_7days * 10}%` }}
+                                transition={{ duration: 0.7 }}
+                                className={`h-full rounded-full ${rich.emotional_trend_7days >= 6 ? 'bg-success' : rich.emotional_trend_7days >= 4 ? 'bg-accent-gold' : 'bg-error'}`}
+                              />
+                            </div>
+                            <span className={`text-sm font-black ${rich.emotional_trend_7days >= 6 ? 'text-success' : rich.emotional_trend_7days >= 4 ? 'text-accent-gold' : 'text-error'}`}>
+                              {rich.emotional_trend_7days.toFixed(1)}/10
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'cuidador' && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-surface-soft rounded-2xl p-4">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Tipo cuidador</p>
+                            <p className="font-bold text-text-main text-sm">{lbl(rich.caregiver_type)}</p>
+                          </div>
+                          <div className="bg-surface-soft rounded-2xl p-4">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Frecuencia contacto</p>
+                            <p className="font-bold text-text-main text-sm">{lbl(rich.contact_frequency)}</p>
+                          </div>
+                          <div className="bg-surface-soft rounded-2xl p-4">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Burnout cuidador</p>
+                            <p className={`font-bold text-sm ${rich.caregiver_burnout === 'severo' ? 'text-error' : rich.caregiver_burnout === 'moderado' ? 'text-accent-gold' : rich.caregiver_burnout === 'leve' ? 'text-orange-500' : 'text-success'}`}>
+                              {lbl(rich.caregiver_burnout)}
+                            </p>
+                          </div>
+                          <div className="bg-surface-soft rounded-2xl p-4">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">Calidad relación</p>
+                            <p className="font-bold text-text-main text-sm">{lbl(rich.relationship_quality)}</p>
+                          </div>
+                        </div>
+                        <Row label="Red de apoyo familiar" value={lbl(rich.family_support_network)} />
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-2">Señales observadas en el cuidador</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {rich.caregiver_signals.map(s => (
+                              <span key={s} className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${s === 'sin_señales' ? 'bg-success/10 text-success' : 'bg-orange-50 text-orange-600'}`}>
+                                {lbl(s)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'fisico' && (
+                      <div className="space-y-3">
+                        <Row label="Comunicación" value={lbl(rich.communication_ability)} />
+                        <Row label="Movilidad" value={lbl(rich.mobility)} />
+                        <Row label="Control motor fino" value={lbl(rich.fine_motor_control)} />
+                        <Row label="Dolor crónico" value={lbl(rich.chronic_pain)} />
+                        <Row label="Capacidad cognitiva" value={lbl(rich.cognitive_capacity)} />
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            )}
           </div>
 
           {/* Right: Quick Actions */}
