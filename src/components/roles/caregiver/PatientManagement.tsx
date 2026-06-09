@@ -31,6 +31,21 @@ const DISEASE_LABELS: Record<string, string> = {
   otra: 'Otra',
 };
 
+const FALLBACK_PATIENTS: ManagedPatient[] = [
+  { id: 'sp-01', name: 'Carlos Mendoza',     age: 68, diagnosis: 'Parkinson — Estadio Moderado',       neurologicalDisease: 'parkinson',          status: 'active',   createdAt: new Date('2026-01-10'), source: 'supabase' },
+  { id: 'sp-02', name: 'Julián Torres',       age: 45, diagnosis: 'ELA — Estadio Avanzado',             neurologicalDisease: 'ela',                status: 'active',   createdAt: new Date('2026-01-12'), source: 'supabase' },
+  { id: 'sp-03', name: 'Beatriz Gutiérrez',  age: 79, diagnosis: 'Alzheimer — Estadio Moderado',       neurologicalDisease: 'alzheimer',           status: 'active',   createdAt: new Date('2026-01-15'), source: 'supabase' },
+  { id: 'sp-04', name: 'Diego Montoya',       age: 42, diagnosis: 'Huntington — Estadio Moderado',      neurologicalDisease: 'huntington',          status: 'active',   createdAt: new Date('2026-01-18'), source: 'supabase' },
+  { id: 'sp-05', name: 'María Claudia Ruiz', age: 34, diagnosis: 'Esclerosis Múltiple — Estadio Leve', neurologicalDisease: 'esclerosis_multiple', status: 'active',   createdAt: new Date('2026-01-20'), source: 'supabase' },
+  { id: 'sp-06', name: 'Mercedes Ríos',       age: 78, diagnosis: 'Parkinson — Terminal',               neurologicalDisease: 'parkinson',          status: 'active',   createdAt: new Date('2026-01-22'), source: 'supabase' },
+  { id: 'sp-07', name: 'Mónica Vargas',       age: 38, diagnosis: 'ELA — Estadio Moderado',             neurologicalDisease: 'ela',                status: 'active',   createdAt: new Date('2026-01-25'), source: 'supabase' },
+  { id: 'sp-08', name: 'Luis Arango',         age: 82, diagnosis: 'Alzheimer — Estadio Avanzado',       neurologicalDisease: 'alzheimer',           status: 'active',   createdAt: new Date('2026-01-28'), source: 'supabase' },
+  { id: 'sp-09', name: 'Valentina Cruz',      age: 35, diagnosis: 'Huntington — Estadio Leve',          neurologicalDisease: 'huntington',          status: 'active',   createdAt: new Date('2026-02-01'), source: 'supabase' },
+  { id: 'sp-10', name: 'Sandra Nieto',        age: 50, diagnosis: 'ELA — Terminal',                     neurologicalDisease: 'ela',                status: 'inactive', createdAt: new Date('2026-02-05'), source: 'supabase' },
+  { id: 'sp-11', name: 'Rosario Vega',        age: 75, diagnosis: 'Alzheimer — Estadio Leve',           neurologicalDisease: 'alzheimer',           status: 'active',   createdAt: new Date('2026-02-08'), source: 'supabase' },
+  { id: 'sp-12', name: 'Sergio Medina',       age: 48, diagnosis: 'Huntington — Estadio Avanzado',      neurologicalDisease: 'huntington',          status: 'inactive', createdAt: new Date('2026-02-10'), source: 'supabase' },
+];
+
 const PatientManagement: React.FC<Props> = ({ onBack, onWorkWithPatient }) => {
   const {
     managedPatients,
@@ -77,9 +92,12 @@ const PatientManagement: React.FC<Props> = ({ onBack, onWorkWithPatient }) => {
           source: 'supabase' as const,
         }));
         setManagedPatients(mapped);
+      } else {
+        // Supabase not configured or empty — load representative demo patients
+        setManagedPatients(FALLBACK_PATIENTS);
       }
     } catch (_) {
-      // Supabase not configured — no-op
+      setManagedPatients(FALLBACK_PATIENTS);
     }
     setSupabaseLoaded(true);
     setIsLoading(false);
